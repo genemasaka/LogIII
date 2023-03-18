@@ -1,12 +1,15 @@
-import { Stack, Card, ListGroup, Form, Button, Alert, Nav, Navbar, Container, NavDropdown, Offcanvas } from "react-bootstrap"
+import { Stack, Card, ListGroup, Form, Button, Alert, Nav, Navbar, Container, NavDropdown, Modal } from "react-bootstrap"
 import { useState, useEffect, useRef } from 'react'
 import { ethers } from 'ethers'
 import sandcrystal from './sandcrystal.png'
 import abi from './log3Abi.json'
+
 export default function App() {
   const [address, setAddress] = useState(null)
   const [isAddress, setIsAddress]
     = useState(false)
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
 
   const abi = [
     {
@@ -92,17 +95,8 @@ export default function App() {
       alert('Please add both Title and Log!')
 
     }
-    // const logs = await log3Contract.getLogs(address)
-    // logs.forEach((log) => {
-    //   const { header, body, author, date } = log;
-    //   document.getElementById('log-header').innerHTML = header
-    //   document.getElementById('log-body').innerHTML = body
-    //   console.log(`Author: ${author}`);
-    //   console.log(`Date: ${new Date(date * 1000)}`); // convert the timestamp to a Date object for readability
-    // });
-
   }
-  
+
   const handleGet = async () => {
     const provider = new ethers.BrowserProvider(window.ethereum);
     // Get user accounts from Metamask
@@ -119,6 +113,12 @@ export default function App() {
       logList.appendChild(headerElement);
     })
     document.getElementById('log-display').style.visibility = 'visible'
+    const logHead = document.querySelectorAll('p')
+    logHead.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        setShow(true);
+      })
+    })
   }
   // Handle login button click 
   const handleLogin = async () => {
@@ -174,12 +174,12 @@ export default function App() {
             </div>
           </div>
           <Card id="card" bg="dark" className="w-25 mx-auto text-center shadow-lg" style={{ 'visibility': 'hidden', 'z-index': '9', }}>
-            <Card.Header id="log-header" style={{'background-color' : 'black'}}></Card.Header>
-            <Card.Body style={{'background-color' : 'black'}}>
+            <Card.Header id="log-header" style={{ 'background-color': 'black' }}></Card.Header>
+            <Card.Body style={{ 'background-color': 'black' }}>
               <Card.Title id="log-body"></Card.Title>
               <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                 <Form.Label>Title</Form.Label>
-                <Form.Control id="title" type="text"  />
+                <Form.Control id="title" type="text" />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
                 <Form.Label>Log</Form.Label>
@@ -187,16 +187,26 @@ export default function App() {
               </Form.Group>
               <Button onClick={handleSubmit} style={{ 'background-color': '#D2AA6D', 'border': 'none' }}>Submit </Button>
             </Card.Body>
-            <Card.Footer className="text-muted" style={{'background-color' : 'black'}}>
+            <Card.Footer className="text-muted" style={{ 'background-color': 'black' }}>
               <Button className="mb-3" onClick={handleGet} style={{ 'background-color': '#D2AA6D', 'border': 'none' }}>Get Logs</Button>
             </Card.Footer>
           </Card>
           <Card id="log-display" bg="dark" className="w-25 mx-auto text-center shadow-lg" style={{ 'z-index': '9', 'visibility': 'hidden' }}>
-            <Card.Header style={{'background-color' : 'black'}}>Your Logs</Card.Header>
+            <Card.Header style={{ 'background-color': 'black' }}>Your Logs</Card.Header>
             <ListGroup variant="flush">
               <ListGroup.Item id="log-list"></ListGroup.Item>
             </ListGroup>
           </Card>
+          <Modal style={{ 'background-color': 'black' }} show={show} onHide={handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>Log Header</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="modal_body">
+
+            </Modal.Body>
+            <Modal.Footer>
+            </Modal.Footer>
+          </Modal>
         </div>
       </div>
     </>
