@@ -10,7 +10,10 @@ export default function App() {
     = useState(false)
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
-
+  const [logs, setLogs] = useState<Array<{ header: string; body: string; author: string; date: string }>>([]);
+  const [author, setAuthor] = useState('')
+  const [body, setBody] = useState('')
+  const [header, setHeader] = useState('')
   const abi = [
     {
       "inputs": [
@@ -97,28 +100,34 @@ export default function App() {
     }
   }
 
-  const handleGet = async () => {
+  const handleGet = async (e: event) => {
+    e.preventDefault()
     const provider = new ethers.BrowserProvider(window.ethereum);
     // Get user accounts from Metamask
     const accounts = await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner(accounts[0]);
     const log3Contract = new ethers.Contract(log3Address, abi, signer)
     const logs = await log3Contract.getLogs(address)
+    setLogs((prevLogs) => [...prevLogs, ...logs]);
     logs.forEach((log) => {
-      console.log(log)
-      const { header, body, author, date } = log;
-      let logList = document.getElementById('log-list')
-      let headerElement = document.createElement('p');
-      headerElement.innerText = header;
-      logList.appendChild(headerElement);
-    })
+  console.log(log)
+  const { header, body, author, date } = log;
+  let logList = document.getElementById('log-list')
+  let headerElement = document.createElement('p');
+  headerElement.innerText = header;
+  headerElement.addEventListener("click", (e) => {
+    // Retrieve the log data based on the clicked header element
+    const clickedLog = logs.find((log) => log.header === (e.target as HTMLParagraphElement).innerText); // Add type assertion here
+    // Set the log data to the modal body and author fields
+    setShow(true);
+    setBody(clickedLog.body);
+    setAuthor(clickedLog.author);
+    setHeader(clickedLog.header);
+  });
+  logList.appendChild(headerElement);
+})
+
     document.getElementById('log-display').style.visibility = 'visible'
-    const logHead = document.querySelectorAll('p')
-    logHead.forEach((item) => {
-      item.addEventListener("click", (e) => {
-        setShow(true);
-      })
-    })
   }
   // Handle login button click 
   const handleLogin = async () => {
@@ -197,14 +206,16 @@ export default function App() {
               <ListGroup.Item id="log-list"></ListGroup.Item>
             </ListGroup>
           </Card>
-          <Modal style={{ 'background-color': 'black' }} show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
-              <Modal.Title>Log Header</Modal.Title>
+          <Modal style={{ 'background-color': 'black', 'text-align' : 'center' }} show={show} onHide={handleClose}>
+            <Modal.Header style={{ 'text-align' : 'center', }} closeButton>
+              <Modal.Title >{header}</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="modal_body">
-
+            <Modal.Body>
+              <p><span id="modal_body">{body}</span></p>
+             
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer style={{ 'text-align' : 'center' }}>
+               <h6 style={{'margin-right' : '5px'}}>Author: <span id="modal_author">{author}</span></h6>
             </Modal.Footer>
           </Modal>
         </div>
